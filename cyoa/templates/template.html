@@ -1,0 +1,19 @@
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1 class="title">{{.Title}}</h1>
+    <span class="card">
+        {{range .Paragraphs}}
+            <p class="paragrapgs">{{.}}</p>
+        {{end}}
+        <form method="POST">
+            {{range .Options}}
+                <div class="container">
+                    <label class="options-text">{{.Text}}</label><br />
+                    <button class="options-button" type="submit" name="arc" value="{{.Chapter}}">{{.Chapter}}</button><br /><br />
+                </div>
+            {{end}}
+        </form>
+    </span>
+</body>

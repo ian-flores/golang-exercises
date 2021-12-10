@@ -3,10 +3,9 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
+	"html/template"
 	"io/ioutil"
-
-	"github.com/fatih/color"
+	"net/http"
 )
 
 type Story map[string]Chapter
@@ -38,40 +37,21 @@ func main() {
 
 	currentChapter := INITIATION_STRING
 
-	for currentChapter != TERMINATION_STRING {
-		currentChapter = loadChapter(story[currentChapter])
-	}
+	tmpl := template.Must(template.ParseFiles("templates/template.html"))
 
-	loadChapter(story[TERMINATION_STRING])
-}
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			tmpl.Execute(w, story[currentChapter])
+			return
+		}
 
-func loadChapter(chapter Chapter) (nextChapter string) {
-	color.HiGreen(chapter.Title)
-	fmt.Printf("\n")
+		currentChapter = r.FormValue("arc")
 
-	for _, paragraph := range chapter.Paragraphs {
-		color.HiYellow(paragraph)
-		fmt.Scanln()
-	}
+		tmpl.Execute(w, story[currentChapter])
+	})
 
-	if len(chapter.Options) == 0 {
-		return
-	}
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-	c := color.New(color.FgCyan).Add(color.Underline)
-
-	for idx, option := range chapter.Options {
-		c.Println("Option", idx+1, "->", option.Text)
-	}
-
-	fmt.Printf("\n")
-
-	var input int
-	fmt.Scanln(&input)
-
-	fmt.Printf("\n")
-
-	nextChapter = chapter.Options[input-1].Chapter
-	return nextChapter
+	http.ListenAndServe(":8080", nil)
 
 }
